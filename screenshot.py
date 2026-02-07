@@ -33,11 +33,13 @@ def screenshot():
     print("Navigated to target page, waiting for it to load...")
     time.sleep(2)  # 等待 2 秒確保頁面載入完整
 
+    '''
     # 滾動到頁面底部
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     print("Scrolling to the bottom...")
     time.sleep(3)  # 等待 3 秒確保頁面完全載入
-
+    '''
+    
     # 截取整個頁面
     
     driver.save_screenshot(screenshot_path)

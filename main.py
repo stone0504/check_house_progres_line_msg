@@ -20,12 +20,12 @@ with config_path.open() as f:
 # === LINE API 設定 ===
 LINE_ACCESS_TOKEN = config["LINE_ACCESS_TOKEN"]
 USER_ID = config["USER_ID"] # piccc group
-LINE_API_URL = config["USER_ID"]
+LINE_API_URL = config["LINE_API_URL"]
 
 # === 目標網址與 session 設定 ===
 homepage_url = config["homepage_url"]  # 首頁，先訪問以建立 session
 target_url = config["target_url"]  # 目標頁面
-check_interval = 7200  # 每 7200 小時檢查一次 （7200）
+check_interval = config["check_interval"]   # 每 7200 小時檢查一次 （7200）
 
 
 # 本机图片路径
@@ -42,7 +42,7 @@ def send_message():
         "messages": [
             {
                 "type": "text",
-                "text": "吉美網頁有新更新！請查看系統。"
+                "text": "吉美使用執照網頁有新更新！請查看系統。"
             }
         ]
     }
@@ -59,40 +59,49 @@ def send_image():
         "Authorization": f"Bearer {LINE_ACCESS_TOKEN}",
     }
 
-    # 先上传图片到外部服务器（因为 LINE API 需要图片的 URL）
-    image_url = upload_image_to_imgur(IMAGE_PATH)
+    # 先上傳圖片到 ImgBB（因為 LINE API 需要圖片的 URL）
+    image_url = upload_image_to_imgbb(IMAGE_PATH)
 
     if not image_url:
-        print("图片上传失败")
-        return
+        print("圖片上傳失敗")
+        return False
 
-    # 发送消息
+    # 發送訊息
     payload = {
         "to": USER_ID,
         "messages": [
             {
                 "type": "image",
-                "originalContentUrl": image_url,  # 图片的 URL
-                "previewImageUrl": image_url,  # 预览图的 URL
+                "originalContentUrl": image_url,  # 圖片的 URL
+                "previewImageUrl": image_url,  # 預覽圖的 URL
             }
         ],
     }
 
     response = requests.post(LINE_API_URL, json=payload, headers=headers)
-    print(response.json())
+    
+    if response.status_code == 200:
+        print("圖片發送成功！")
+        print(response.json())
+        return True
+    else:
+        print(f"圖片發送失敗，錯誤代碼：{response.status_code}")
+        print(response.text)
+        return False
 
-# 使用 Imgur API 上传图片（或你自己的图床）
-def upload_image_to_imgur(image_path):
-    IMGUR_CLIENT_ID = config["IMGUR_CLIENT_ID"]  # 需要去 Imgur 申请
-    headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
+# 使用 ImgBB API 上傳圖片
+def upload_image_to_imgbb(image_path):
+    IMGBB_API_KEY = config["IMGBB_API_KEY"]  # 需要去 ImgBB 申請
+    
     with open(image_path, "rb") as f:
         files = {"image": f}
-        response = requests.post("https://api.imgur.com/3/upload", headers=headers, files=files)
+        data = {"key": IMGBB_API_KEY}
+        response = requests.post("https://api.imgbb.com/1/upload", data=data, files=files)
 
     if response.status_code == 200:
-        return response.json()["data"]["link"]
+        return response.json()["data"]["url"]
     else:
-        print("图片上传失败:", response.json())
+        print("圖片上傳失敗:", response.json())
         return None
 
 
@@ -132,21 +141,29 @@ while True:
         current_hash = get_content_hash(page_content)
 
         if previous_hash and current_hash != previous_hash:
-            print(f"{now_time()}: 網頁有更新！")
+            print(f"{now_time()}: 使用執照網頁有更新！")
             screenshot.screenshot()
             send_message()
-            send_image()
-            time.sleep(3)
-            os.remove(IMAGE_PATH)
+            if send_image():
+                time.sleep(3)
+                if os.path.exists(IMAGE_PATH):
+                    os.remove(IMAGE_PATH)
+                    print("截圖已刪除")
+            else:
+                print("圖片發送失敗，保留截圖檔案")
         else:
             print(f"{now_time()}: 沒有變更")
-            '''
+            
             screenshot.screenshot()
             send_message()
-            send_image()
-            time.sleep(3)
-            os.remove(IMAGE_PATH)
-            '''
+            if send_image():
+                time.sleep(3)
+                if os.path.exists(IMAGE_PATH):
+                    os.remove(IMAGE_PATH)
+                    print("截圖已刪除")
+            else:
+                print("圖片發送失敗，保留截圖檔案")
+            
         previous_hash = current_hash
         time.sleep(check_interval)
 

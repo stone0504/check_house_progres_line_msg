@@ -1,8 +1,9 @@
 {
-    "LINE_ACCESS_TOKEN" : "YOUR_LINE_ACCESS_TOKEN",
-    "USER_ID":"YOUR_USER_ID",
-    "LINE_API_URL":"https://api.line.me/v2/bot/message/push",
-    "homepage_url":"https://tccmoapply.dba.tcg.gov.tw/tccmoapply/",
-    "target_url":"https://tccmoapply.dba.tcg.gov.tw/tccmoapply/maliapp/asp/aspcons_f000.jsp?MODE=SAVE&KIND=01&YY=109&NO1=0267&NO2=00&CG=05",
-    "IMGUR_CLIENT_ID":"YOUR_IMGUR_CLIENT_ID"
+    "LINE_ACCESS_TOKEN": "YOUR_LINE_ACCESS_TOKEN",
+    "USER_ID": "YOUR_USER_ID",
+    "LINE_API_URL": "https://api.line.me/v2/bot/message/push",
+    "homepage_url": "https://tccmoapply.dba.tcg.gov.tw/tccmoapply/",
+    "target_url": "https://tccmoapply.dba.tcg.gov.tw/tccmoapply/maliapp/asp/asp01_f000.jsp?YY=115&NO=8014&KIND=12&CG=00",
+    "IMGUR_CLIENT_ID": "YOUR_IMGUR_CLIENT_ID",
+    "check_interval": 7200
 }
